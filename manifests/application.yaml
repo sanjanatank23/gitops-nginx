@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/gitops-nginx.git
+    repoURL: https://github.com/sanjanatank23/gitops-nginx.git
     targetRevision: main
     path: manifests
 
