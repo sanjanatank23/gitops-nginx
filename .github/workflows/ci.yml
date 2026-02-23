@@ -1,0 +1,46 @@
+name: CI - Build & Deploy via GitOps
+
+on:
+  push:
+    paths:
+      - "my-app/**"
+    branches:
+      - main
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ Checkout repo
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2️⃣ Login to Docker Hub
+    - name: Docker login
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # 3️⃣ Build & push Docker image
+    - name: Build and push image
+      run: |
+        IMAGE_TAG=${{ github.run_number }}
+        docker build -t sanjanatank/gitops-app:${IMAGE_TAG} my-app
+        docker push sanjanatank/gitops-app:${IMAGE_TAG}
+        echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+    # 4️⃣ Update Kubernetes manifest
+    - name: Update deployment image
+      run: |
+        sed -i "s|image: .*|image: sanjanatank/gitops-app:${IMAGE_TAG}|" manifests/deployment.yaml
+
+    # 5️⃣ Commit & push manifest change
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add manifests/deployment.yaml
+        git commit -m "CI: update image to ${IMAGE_TAG}"
+        git push
