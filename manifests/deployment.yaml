@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: sanjanatank/gitops-app:2
+        image: sanjanatank/gitops-app:3
         ports:
         - containerPort: 80
